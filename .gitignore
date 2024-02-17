@@ -6,6 +6,7 @@
 *.iml
 out
 gen
+.idea/workspace.xml
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
