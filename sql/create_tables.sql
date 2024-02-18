@@ -25,6 +25,7 @@ CREATE TABLE clients (
 
 CREATE TABLE requests (
     request_id SERIAL PRIMARY KEY UNIQUE,  --Number of request
+    request_number INT UNIQUE,
     client_id INT NOT NULL,
     state_id INT,
     responsible_id INT,

@@ -17,6 +17,6 @@ INSERT INTO clients(client_name, phone_number) VALUES
     ('Иванов Иван', '+795131351321'),
     ('Маслов Иван', '+795131351321');
 
-INSERT INTO requests(client_id, state_id, responsible_id, equipment, type_of_fault, description) VALUES
-    (1, 1, 1, 'процессор', 'замена процессора', 'нужно заменить процессор на более новый'),
-    (2, 1, 2, 'материнская плата', 'не работает оперативная память', 'проверить работоспособность материнской платы');
+INSERT INTO requests(request_number, client_id, state_id, responsible_id, equipment, type_of_fault, description) VALUES
+    (123, 1, 1, 1, 'процессор', 'замена процессора', 'нужно заменить процессор на более новый'),
+    (432, 2, 1, 2, 'материнская плата', 'не работает оперативная память', 'проверить работоспособность материнской платы');

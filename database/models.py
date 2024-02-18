@@ -39,6 +39,7 @@ class Requests(Base):
     __tablename__ = 'requests'
 
     request_id = Column(Integer, primary_key=True, unique=True, nullable=False)
+    request_number = Column(Integer, unique=True, nullable=False)
     client_id = Column(Integer, ForeignKey('clients.client_id'))
     state_id = Column(Integer, ForeignKey('states.state_id'))
     responsible_id = Column(Integer, ForeignKey('responsible.responsible_id'))
