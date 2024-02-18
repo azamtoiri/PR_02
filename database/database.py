@@ -32,7 +32,7 @@ class UserDatabase(BaseDatabase):
 
 class RequestDatabase(BaseDatabase):
     def get_all_requests(self) -> list[Type[Requests]]:
-        ...
+        return self.session.query(Requests).all()
 
     def get_request_by_id(self, request_id) -> Type[Requests]:
         ...
