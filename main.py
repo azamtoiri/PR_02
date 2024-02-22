@@ -13,7 +13,7 @@ def main(page: ft.Page) -> None:
     Routing(page=page, app_routes=all_routes)
     page.on_route_change = Routing.change_route
 
-    page.go('/login')
+    page.go('/requests')
 
 
 ft.app(target=main)

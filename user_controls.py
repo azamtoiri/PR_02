@@ -32,6 +32,30 @@ class RequestCard(ft.UserControl):
         )
 
 
+class ClientCard(RequestCard):
+    def __init__(self, title, description, url):
+        super().__init__(title=title, description=description, url=url)
+
+    def build(self) -> ft.Column:
+        main = ft.ListTile()
+        main.title = ft.Text(self.title)
+        main.subtitle = ft.Text(self.description)
+
+        buttons = ft.Row(alignment=ft.MainAxisAlignment.END)
+
+        column = ft.Column()
+        column.controls.append(main)
+        column.controls.append(buttons)
+
+        _main_card = ft.Card(
+            content=column
+        )
+
+        return ft.Column(
+            [_main_card]
+        )
+
+
 class BackButton(ft.UserControl):
     def __init__(self, name: str):
         super().__init__()
