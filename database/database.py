@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, List
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -35,11 +35,13 @@ class UserDatabase(BaseDatabase):
 
     def login_user(self, username: str, password) -> bool:
         user = self.filter_user(username=username)
-        print(user[0].username)
         if user:
             _password = user[0].password
-            if verify(password, _password):
-                return True
+            try:
+                if verify(password, _password):
+                    return True
+            except Exception as _:
+                return False
         else:
             return False
 
@@ -70,7 +72,25 @@ class RequestDatabase(BaseDatabase):
             return False
 
     def update_request_state(self, request_id, state) -> bool:
-        ...
+        try:
+            req = self.get_request_by_id(request_id)
+            req.state_id = self.get_state_id(state).state_id
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
+    def update_responsible(self, request_id, new_responsible) -> bool:
+        try:
+            req = self.get_request_by_id(request_id)
+            responsible_id = self.session.query(Responsible).filter_by(responsible_name=new_responsible).first()
+            req.responsible_id = responsible_id.responsible_id
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
 
     def update_description(self, _id, description: str) -> bool:
         try:
@@ -82,8 +102,9 @@ class RequestDatabase(BaseDatabase):
             print(ex)
             return False
 
-    def get_request_by_request_number(self, req_number) -> Type[Requests]:
-        return self.session.query(Requests).filter(Requests.request_number == req_number).first()
+    def get_request_by_request_number(self, req_number) -> list[Type[Requests]]:
+        self.session.commit()
+        return self.session.query(Requests).where(Requests.request_number == req_number).all()
 
     def get_request_by_type_of_fault(self, type_of_fault) -> list[Type[Requests]]:
         return self.session.query(Requests).where(Requests.type_of_fault.ilike(f"%{type_of_fault}%")).all()

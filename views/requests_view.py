@@ -25,14 +25,33 @@ def open_dlg(e: ft.ControlEvent, text: str) -> None:
 def RequestsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     """Requests view"""
     title = ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[ft.Text('Все заявки', size=25)])
+    requests_ = rdb.get_all_requests()
+
+    def add_requests():
+        for request in requests_:
+            all_requests.controls.append(
+                RequestCard(request.type_of_fault, request.description, f'/request/{request.request_id}',
+                            request_number=request.request_number))
 
     def search(e: ft.ControlEvent):
-        search_val = search_field.value
-        _req = rdb.get_request_by_type_of_fault(search_val)
-        all_requests.controls.clear()
-        for req in _req:
-            all_requests.controls.append(req)
-        e.page.update()
+        search_val = str(search_field.value).strip() if len(search_field.value) else None
+        if search_val is None:
+            all_requests.controls.clear()
+            add_requests()
+            e.page.update()
+            return 0
+        _req = rdb.get_request_by_request_number(search_val)
+        print(_req)
+        if _req:
+            all_requests.controls.clear()
+            for req in _req:
+                all_requests.controls.append(
+                    RequestCard(req.type_of_fault, req.description, f'/request/{req.request_id}',
+                                request_number=req.request_number))
+                e.page.update()
+        else:
+            all_requests.controls.clear()
+            e.page.update()
 
     request_add_button = ft.ElevatedButton('Создать заявку')
     request_add_button.on_click = lambda _: page.go('/request/create')
@@ -40,14 +59,11 @@ def RequestsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     find_client_button.on_click = lambda _: page.go('/client/search')
 
     search_field = ft.TextField(expand=True, hint_text='Поиск')
+    search_field.input_filter = ft.NumbersOnlyInputFilter()
     search_field.on_submit = lambda e: search(e)
 
-    requests_ = rdb.get_all_requests()
-
     all_requests = ft.ListView()
-    for request in requests_:
-        all_requests.controls.append(
-            RequestCard(request.type_of_fault, request.description, f'/request/{request.request_id}'))
+    add_requests()
 
     content = ft.Column()
     content.controls.append(title)
@@ -55,11 +71,13 @@ def RequestsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[request_add_button]))
     content.controls.append(ft.Row([search_field]))
     content.controls.append(all_requests)
-    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[BackButton('Выход')]))
+    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END,
+                                   controls=[ft.ElevatedButton('Выход', on_click=lambda _: page.go('/login'))]))
 
     return ft.View(
         route='/requests',
-        controls=[content]
+        controls=[content],
+        scroll=ft.ScrollMode.AUTO
     )
 
 
@@ -170,9 +188,16 @@ def RequestDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     title = ft.Row(alignment=ft.MainAxisAlignment.CENTER,
                    controls=[ft.Text(f'Номер заявки {params.get("id")}', size=25, color=ft.colors.BLUE, )])
 
-    def change_description(e: ft.ControlEvent):
+    def update_all(e: ft.ControlEvent):
         new_des = str(description.value).strip()
         rdb.update_description(params.get('id'), new_des)
+
+        new_state = str(status_of_req.value).strip()
+        rdb.update_request_state(params.get('id'), new_state)
+
+        new_responsible = str(responsible.value).strip()
+        rdb.update_responsible(params.get('id'), new_responsible)
+
         open_dlg(e, 'Успешно изменено')
 
     req = rdb.get_request_by_id(params.get('id'))
@@ -192,11 +217,14 @@ def RequestDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     for state in states:
         status_of_req.options.append(ft.dropdown.Option(state.state_name))
 
+    client_name = ft.Text(f'имя клиента: {rdb.get_client_by_id(req.client_id).client_name}', size=20)
+    client_phone = ft.Text(f'Номер телефона: {rdb.get_client_by_id(req.client_id).phone_number}', size=20)
+
     create_at = ft.Text(value=f'Дата создания: {req.created_at.strftime("%d-%m-%Y")}')
     create_at.size = 20
 
     change_description_button = ft.ElevatedButton('Изменить описание')
-    change_description_button.on_click = lambda e: change_description(e)
+    change_description_button.on_click = lambda e: update_all(e)
 
     content = ft.Column()
     content.controls.append(title)
@@ -208,9 +236,10 @@ def RequestDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
                                                                                             size=15,
                                                                                             color=ft.colors.GREEN)]))
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[description]))
-    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[change_description_button]))
+    content.controls.append(ft.Column([client_name, client_phone]))
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[status_of_req]))
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[responsible]))
+    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[change_description_button]))
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[create_at]))
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[BackButton('Назад')]))
 

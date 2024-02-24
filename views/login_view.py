@@ -4,6 +4,14 @@ from flet_route import Params, Basket
 from database.database import UserDatabase
 
 user_db = UserDatabase()
+dlg = ft.AlertDialog()
+
+
+def open_dlg(e: ft.ControlEvent, text: str) -> None:
+    e.page.dialog = dlg
+    dlg.title = ft.Text(text)
+    dlg.open = True
+    e.page.update()
 
 
 def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -15,6 +23,8 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
             if _login:
                 e.page.route = '/requests'
                 e.page.update()
+            else:
+                open_dlg(e, 'Не правильный логин или пароль')
         except Exception as ex:
             print(ex)
 

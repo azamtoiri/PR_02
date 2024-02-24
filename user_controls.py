@@ -2,16 +2,17 @@ import flet as ft
 
 
 class RequestCard(ft.UserControl):
-    def __init__(self, title: str, description: str, url: str) -> None:
+    def __init__(self, title: str, description: str, url: str, request_number: int) -> None:
         super().__init__()
+        self.request_number = request_number
         self.title = title
         self.description = description
         self.url = url
 
     def build(self) -> ft.Column:
         main = ft.ListTile()
-        main.title = ft.Text(self.title)
-        main.subtitle = ft.Text(self.description)
+        main.title = ft.Text(f'Номер заявки: {self.request_number}')
+        main.subtitle = ft.Text(f'Тип неисправности: {self.title}\nОписание: {self.description}')
 
         detail_button = ft.ElevatedButton('Перейти')
         detail_button.on_click = lambda _: self.page.go(self.url)
