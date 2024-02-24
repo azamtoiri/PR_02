@@ -12,6 +12,14 @@ from user_controls import RequestCard, BackButton
 # initializing databases
 rdb = RequestDatabase()
 udb = UserDatabase()
+dlg = ft.AlertDialog()
+
+
+def open_dlg(e: ft.ControlEvent, text: str) -> None:
+    e.page.dialog = dlg
+    dlg.title = ft.Text(text)
+    dlg.open = True
+    e.page.update()
 
 
 def RequestsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
@@ -160,15 +168,17 @@ def RequestCreateView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
 def RequestDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     title = ft.Row(alignment=ft.MainAxisAlignment.CENTER,
-                   controls=[ft.Text(f'Номер заявки {params.get("id")}', size=25, color=ft.colors.BLUE,)])
+                   controls=[ft.Text(f'Номер заявки {params.get("id")}', size=25, color=ft.colors.BLUE, )])
 
     def change_description(e: ft.ControlEvent):
-        ...
+        new_des = str(description.value).strip()
+        rdb.update_description(params.get('id'), new_des)
+        open_dlg(e, 'Успешно изменено')
+
     req = rdb.get_request_by_id(params.get('id'))
 
     type_of_fault = ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[ft.Text(value=req.type_of_fault, size=20)])
     description = ft.TextField(value=req.description, expand=True, enable_suggestions=True)
-    description.on_submit = lambda e: change_description(e)
 
     responsible = ft.Dropdown()
     responsible.hint_text = rdb.get_responsible_by_id(req.responsible_id).responsible_name
@@ -185,16 +195,22 @@ def RequestDetailView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     create_at = ft.Text(value=f'Дата создания: {req.created_at.strftime("%d-%m-%Y")}')
     create_at.size = 20
 
+    change_description_button = ft.ElevatedButton('Изменить описание')
+    change_description_button.on_click = lambda e: change_description(e)
+
     content = ft.Column()
     content.controls.append(title)
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[ft.Text('Тип ошибки',
-                                                                                            size=15, color=ft.colors.RED)]))
+                                                                                            size=15,
+                                                                                            color=ft.colors.RED)]))
     content.controls.append(type_of_fault)
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[ft.Text('Описание',
-                                                                                            size=15, color=ft.colors.GREEN)]))
-    content.controls.append(ft.Row([description]))
-    content.controls.append(ft.Row([status_of_req]))
-    content.controls.append(ft.Row([responsible]))
+                                                                                            size=15,
+                                                                                            color=ft.colors.GREEN)]))
+    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[description]))
+    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[change_description_button]))
+    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[status_of_req]))
+    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[responsible]))
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[create_at]))
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[BackButton('Назад')]))
 

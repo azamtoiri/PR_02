@@ -57,6 +57,16 @@ class RequestDatabase(BaseDatabase):
     def update_request_state(self, request_id, state) -> bool:
         ...
 
+    def update_description(self, _id, description: str) -> bool:
+        try:
+            req = self.get_request_by_id(_id)
+            req.description = description
+            self.session.commit()
+            return True
+        except Exception as ex:
+            print(ex)
+            return False
+
     def get_request_by_request_number(self, req_number) -> Type[Requests]:
         return self.session.query(Requests).filter(Requests.request_number == req_number).first()
 

@@ -83,9 +83,9 @@ def ClientSearch(page: ft.Page, params: Params, basket: Basket) -> ft.View:
 
     content = ft.Column()
     content.controls.append(title)
+    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[BackButton('Назад')]))
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[search_field]))
     content.controls.append(result)
-    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END, controls=[BackButton('Назад')]))
 
     return ft.View(
         route='/client/search',
