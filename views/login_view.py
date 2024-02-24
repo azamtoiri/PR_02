@@ -1,9 +1,22 @@
 import flet as ft
 from flet_route import Params, Basket
 
+from database.database import UserDatabase
+
+user_db = UserDatabase()
+
 
 def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     title = ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[ft.Text('Вход', size=25)])
+
+    def login_user(e: ft.ControlEvent):
+        try:
+            _login = user_db.login_user(username_field.value, password_field.value)
+            if _login:
+                e.page.route = '/requests'
+                e.page.update()
+        except Exception as ex:
+            print(ex)
 
     username_field = ft.TextField(hint_text='Имя пользователя')
 
@@ -12,7 +25,7 @@ def LoginView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     password_field.can_reveal_password = True
 
     login_button = ft.OutlinedButton(text='Вход')
-    login_button.on_click = lambda _: page.go('/requests')
+    login_button.on_click = lambda e: login_user(e)
 
     content = ft.Column()
     content.controls.append(title)

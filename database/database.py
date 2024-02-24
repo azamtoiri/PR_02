@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from database.models import Base, Users, Requests, Responsible, Clients, States
+from utils.jwt_hash import _hash, verify
 
 url = 'postgresql+psycopg2://postgres:1234@localhost:5432/pr02'
 
@@ -23,16 +24,30 @@ class UserDatabase(BaseDatabase):
         elif user.password is None:
             return False
 
+        hashed_password = _hash(user.password)
+        user.password = hashed_password
+
         self.session.add(user)
         self.session.commit()
 
     def filter_user(self, **value) -> list[Type[Users]]:
         return self.session.query(Users).filter_by(**value).all()
 
+    def login_user(self, username: str, password) -> bool:
+        user = self.filter_user(username=username)
+        print(user[0].username)
+        if user:
+            _password = user[0].password
+            if verify(password, _password):
+                return True
+        else:
+            return False
+
 
 class RequestDatabase(BaseDatabase):
     def get_states(self) -> list[Type[States]]:
         return self.session.query(States).all()
+
     def get_state_id(self, state) -> Type[States]:
         return self.session.query(States).where(States.state_name == state).first()
 
@@ -100,4 +115,3 @@ class RequestDatabase(BaseDatabase):
 
     def get_all_clients(self) -> list[Type[Clients]]:
         return self.session.query(Clients).all()
-
