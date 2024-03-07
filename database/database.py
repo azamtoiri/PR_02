@@ -18,6 +18,14 @@ class BaseDatabase:
 
 
 class UserDatabase(BaseDatabase):
+    # def __init__(self) -> None:
+    #     super().__init__()
+    #     self.create_default_user()
+
+    def create_default_user(self) -> None:
+        user = Users(username='1admin', password='admin')
+        self.insert_user(user)
+
     def insert_user(self, user: Users) -> bool:
         if user.username is None:
             return False
@@ -151,4 +159,3 @@ class RequestDatabase(BaseDatabase):
 
     def get_all_clients(self) -> list[Type[Clients]]:
         return self.session.query(Clients).all()
-
