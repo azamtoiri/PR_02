@@ -57,6 +57,8 @@ def RequestsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     request_add_button.on_click = lambda _: page.go('/request/create')
     find_client_button = ft.ElevatedButton('Найти клиента')
     find_client_button.on_click = lambda _: page.go('/client/search')
+    statistic_button = ft.ElevatedButton('Посмотреть статистику')
+    statistic_button.on_click = lambda _: page.go('/statistic')
 
     search_field = ft.TextField(expand=True, hint_text='Поиск')
     search_field.input_filter = ft.NumbersOnlyInputFilter()
@@ -68,7 +70,7 @@ def RequestsView(page: ft.Page, params: Params, basket: Basket) -> ft.View:
     content = ft.Column()
     content.controls.append(title)
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[find_client_button]))
-    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=[request_add_button]))
+    content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[request_add_button, statistic_button]))
     content.controls.append(ft.Row([search_field]))
     content.controls.append(all_requests)
     content.controls.append(ft.Row(alignment=ft.MainAxisAlignment.END,

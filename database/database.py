@@ -1,4 +1,4 @@
-from typing import Type, List
+from typing import Type, Tuple
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -29,6 +29,7 @@ class UserDatabase(BaseDatabase):
 
         self.session.add(user)
         self.session.commit()
+        return True
 
     def filter_user(self, **value) -> list[Type[Users]]:
         return self.session.query(Users).filter_by(**value).all()
@@ -58,6 +59,20 @@ class RequestDatabase(BaseDatabase):
 
     def get_all_requests(self) -> list[Type[Requests]]:
         return self.session.query(Requests).all()
+
+    def get_unique_types_of_faults(self) -> list[Tuple[str, int]]:
+        """
+        @return: list with tuple(str: 'type_of_fault', int: 'quantity')
+        """
+        return self.session.query(Requests.type_of_fault, func.count(Requests.type_of_fault)).group_by(
+            Requests.type_of_fault).all()
+
+    def get_requests_with_res_and_state(self) -> list[Tuple[Requests, Responsible, States]]:
+        return self.session.query(Requests, Responsible, States).join(
+            Responsible, Responsible.responsible_id == Requests.responsible_id
+        ).join(
+            States, States.state_id == Requests.state_id
+        ).all()
 
     def get_request_by_id(self, request_id) -> Type[Requests]:
         return self.session.query(Requests).filter(Requests.request_id == request_id).first()
@@ -136,3 +151,4 @@ class RequestDatabase(BaseDatabase):
 
     def get_all_clients(self) -> list[Type[Clients]]:
         return self.session.query(Clients).all()
+
